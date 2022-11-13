@@ -1,0 +1,12 @@
+#! /bin/sh
+
+set -x
+unset SSH_AUTH_SOCK
+ssh -F none \
+	-o AddKeysToAgent=no \
+	-o UserKnownHostsFile=/dev/null \
+	-o StrictHostKeyChecking=accept-new \
+	-p 8022 \
+	-l testuser \
+	-i dev/data/ssh_client_rsa_key \
+	"$@"

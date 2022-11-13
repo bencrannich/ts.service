@@ -1,0 +1,10 @@
+version: '3.3'
+services:
+  tsap-ssh:
+    restart: unless-stopped
+    build:
+      target: tsap-ssh
+    tmpfs:
+      - /run/sshd:mode=0700
+    ports:
+      - "127.0.0.1:8022:22/tcp"

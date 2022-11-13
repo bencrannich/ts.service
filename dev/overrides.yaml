@@ -1,0 +1,5 @@
+version: "3.3"
+services:
+  tsap-ssh:
+     build:
+      target: tsap-ssh-dev

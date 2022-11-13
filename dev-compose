@@ -1,0 +1,80 @@
+#! /bin/sh
+
+## Helper script for running Compose commands with the correct set of YAML
+## (and data) files for the default development environment
+
+## This script must be run from the top-level source directory
+
+## To use this script, simply invoke it as you would "docker compose", e.g.:
+#
+# ./dev-compose logs -f
+#
+# All configurable parameters are passed via environment variables (see below),
+# and any arguments you specify are passed directly to Compose
+
+## Environment variables you can set:
+#
+# Variable          Default value       Type      Description
+#
+# COMPOSE           docker compose      String    Compose command name
+# TS_DEV_NAME       tsdev               String    Compose project name
+
+COMPOSE=${COMPOSE:-'docker compose'}
+TS_DEV_NAME=${TS_DEV_NAME:-'tsdev'}
+
+is_true() {
+	case "$1" in
+		1|YES|yes|true)
+			return 0
+			;;
+	esac
+	return 1
+}
+
+ensure_exists() {
+	for file in "$@" ; do
+		mkdir -p "$(dirname "${file}")"
+		touch "${file}"
+	done
+}
+
+mkdir -p dev/data/ssh
+
+## Generate a client key that can be used to authenticate as a test user
+# This key will be added to /home/otto/.ssh/authorized_keys in the
+# tsap-ssh-dev container, which is used instead of tsap-ssh when bringing
+# up the development stack by this script
+
+if ! [ -r dev/data/ssh_client_rsa_key ] ; then
+	ssh-keygen -t rsa -N "" -f dev/data/ssh_client_rsa_key -C "SSH client key for 'testuser'"
+fi
+
+## dev/local.env is included for any environment overrides you want to
+## apply - it's excluded from git and touched here only to guarantee
+## that it exists
+
+if ! [ -r dev/local.env ] ; then
+	cat >dev/local.env <<EOF
+# Use this file to apply any local environment variable overrides that
+# should be passed to all containers
+EOF
+fi
+
+if ! [ -r dev/local.yaml ] ; then
+	cat >dev/local.yaml <<EOF
+# This file is passed automatically to Compose when a development environment
+# is used (e.g., via the top-level Makefile), but it is excluded from Git and any
+# changes you make will not be overwritten. It is included last on the
+# command-line, so you can use it to override any service or resource
+# definitions (or add new ones)
+version: "3.3"
+EOF
+fi
+
+set -x
+${COMPOSE} \
+	--project-name "${TS_DEV_NAME}" \
+	-f docker-compose.yaml \
+	-f dev/overrides.yaml \
+	-f dev/local.yaml \
+	"$@"
