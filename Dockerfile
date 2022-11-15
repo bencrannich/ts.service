@@ -16,12 +16,27 @@ ONBUILD RUN apt-get update
 
 FROM base AS build
 
+RUN apt-get install -y build-essential automake autoconf
+
+RUN mkdir /src
+WORKDIR /src
+COPY . /src
+
+RUN autoreconf -fvi && \
+	./configure && \
+	make && \
+	make check && \
+	make install
+
 ## Terminal Server Access Point (TSAP) for SSH
 
 FROM base AS tsap-ssh
 
 RUN apt-get install -y openssh-server
 
+COPY --from=build /usr/local/bin/ts-client /usr/local/bin/
+RUN echo "session required pam_exec.so stdout /usr/local/bin/ts-client" >> /etc/pam.d/sshd
+RUN echo "session required pam_deny.so" >> /etc/pam.d/sshd
 CMD ["/usr/sbin/sshd", "-D", "-e"]
 
 ## SSH TSAP - Development version (enables Debug mode for sshd and
