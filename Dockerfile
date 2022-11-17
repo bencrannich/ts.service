@@ -34,7 +34,7 @@ FROM base AS tsap-ssh
 
 RUN apt-get install -y openssh-server
 RUN rm -vf /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub
-
+RUN apt-get install -y zsh
 COPY --from=build /usr/local/bin/ts-client /usr/local/bin/
 RUN echo "session required pam_exec.so stdout /usr/local/bin/ts-client" >> /etc/pam.d/sshd
 RUN echo "session required pam_deny.so" >> /etc/pam.d/sshd
