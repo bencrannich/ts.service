@@ -1,0 +1,16 @@
+#! /bin/sh
+
+service_name="ts"
+
+hostname="$(hostname | cut -f1 -d.)"
+if ! [ -r .deploy/${hostname}.yaml ] ; then
+	printf "%s: cannot find .deploy/%s.yaml\n" "${service_name}" "${hostname}" >&2
+	exit 1
+fi
+
+set -x
+docker compose \
+	--project-name "${service_name}" \
+	-f docker-compose.yaml -f ".deploy/${hostname}.yaml" \
+	build
+

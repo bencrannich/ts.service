@@ -6,5 +6,3 @@ services:
       target: tsap-ssh
     tmpfs:
       - /run/sshd:mode=0700
-    ports:
-      - "127.0.0.1:8022:22/tcp"

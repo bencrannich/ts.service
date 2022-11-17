@@ -6,7 +6,7 @@ namespace ts
 	class diag
 	{
 	public:
-		static const int INFO = 0;
+		static const int INFO = 1;
 
 		static void log(int level, const char *message);
 		static void logf(int level, const char *format, ...);
